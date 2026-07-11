@@ -9,3 +9,6 @@ dvc
 dvc-gs
 flask
 joblib
+matplotlib
+wordcloud
+keras

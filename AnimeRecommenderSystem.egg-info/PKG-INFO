@@ -13,5 +13,8 @@ Requires-Dist: dvc
 Requires-Dist: dvc-gs
 Requires-Dist: flask
 Requires-Dist: joblib
+Requires-Dist: matplotlib
+Requires-Dist: wordcloud
+Requires-Dist: keras
 Dynamic: author
 Dynamic: requires-dist
