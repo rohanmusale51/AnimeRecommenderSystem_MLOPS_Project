@@ -1,0 +1,17 @@
+Metadata-Version: 2.4
+Name: AnimeRecommenderSystem
+Version: 0.1
+Author: rohanmusale51
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: setuptools
+Requires-Dist: google-cloud-storage
+Requires-Dist: pyyaml
+Requires-Dist: tensorflow
+Requires-Dist: comet-ml
+Requires-Dist: dvc
+Requires-Dist: dvc-gs
+Requires-Dist: flask
+Requires-Dist: joblib
+Dynamic: author
+Dynamic: requires-dist
