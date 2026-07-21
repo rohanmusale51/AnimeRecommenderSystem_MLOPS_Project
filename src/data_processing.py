@@ -38,6 +38,8 @@ class DataProcessor:
         
     def filter_users(self,min_rating=400):
         try:
+            if self.rating_df is None:
+                raise CustomException("No data loaded to filter", sys)
             n_ratings = self.rating_df["user_id"].value_counts()
             self.rating_df = self.rating_df[self.rating_df["user_id"].isin(n_ratings[n_ratings>=min_rating].index)].copy()
             logger.info("Filtered users sucesfully...")
@@ -46,16 +48,32 @@ class DataProcessor:
     
     def scale_ratings(self):
         try:
-            min_rating =min(self.rating_df["rating"])
-            max_rating =max(self.rating_df["rating"])
+            if self.rating_df is None:
+                raise CustomException("No data loaded to scale", sys)
+            if "rating" not in self.rating_df.columns:
+                raise CustomException("Rating column missing", sys)
 
-            self.rating_df["rating"] = self.rating_df["rating"].apply(lambda x: (x-min_rating)/(max_rating-min_rating)).values.astype(np.float64)
-            logger.info("Scalind done for Processing ")
+            min_rating = self.rating_df["rating"].min()
+            max_rating = self.rating_df["rating"].max()
+
+            if min_rating == max_rating:
+                self.rating_df["rating"] = 0.0
+            else:
+                self.rating_df["rating"] = ((self.rating_df["rating"] - min_rating) / (max_rating - min_rating)).astype(np.float64)
+
+            logger.info("Scaling done for Processing ")
         except Exception as e:
             raise CustomException("Failed to scale data",sys)
     
     def encode_data(self):
         try:
+            if self.rating_df is None:
+                raise CustomException("No data loaded to encode", sys)
+            required_cols = {"user_id", "anime_id"}
+            missing_cols = required_cols - set(self.rating_df.columns)
+            if missing_cols:
+                raise CustomException(f"Missing required columns for encoding: {missing_cols}", sys)
+
             ### Users
             user_ids = self.rating_df["user_id"].unique().tolist()
             self.user2user_encoded = {x : i for i , x in enumerate(user_ids)}
@@ -75,7 +93,10 @@ class DataProcessor:
     
     def split_data(self, test_size=1000 , random_state=43):
         try:
-            self.rating_df = self.rating_df.sample(frac=1,random_state=43).reset_index(drop=True)
+            if self.rating_df is None:
+                raise CustomException("No data loaded to split", sys)
+
+            self.rating_df = self.rating_df.sample(frac=1, random_state=random_state).reset_index(drop=True)
             X = self.rating_df[["user","anime"]].values
             y = self.rating_df["rating"]
 
@@ -99,11 +120,14 @@ class DataProcessor:
     
     def save_artifacts(self):
         try:
+            if self.rating_df is None:
+                raise CustomException("No data loaded to save artifacts", sys)
+
             artifacts = {
                 "user2user_encoded" : self.user2user_encoded,
                 "user2user_decoded" : self.user2user_decoded,
-                "anim2anime_encoded" : self.anime2anime_encoded,
-                "anim2anime_decoded" : self.anime2anime_decoded,
+                "anime2anime_encoded" : self.anime2anime_encoded,
+                "anime2anime_decoded" : self.anime2anime_decoded,
             }
 
             for name,data in artifacts.items():
@@ -130,12 +154,15 @@ class DataProcessor:
             df = df.replace("Unknown",np.nan)
 
             def getAnimeName(anime_id):
+                name = None
                 try:
-                    name = df[df.anime_id == anime_id].eng_version.values[0]
-                    if name is np.nan:
-                        name = df[df.anime_id == anime_id].Name.values[0]
-                except:
-                    print("Error")
+                    anime_row = df.loc[df["anime_id"] == anime_id]
+                    if not anime_row.empty:
+                        name = anime_row["eng_version"].values[0]
+                        if pd.isna(name):
+                            name = anime_row["Name"].values[0]
+                except Exception:
+                    logger.warning(f"Anime name lookup failed for anime_id {anime_id}")
                 return name
                 
             df["anime_id"] = df["MAL_ID"]
