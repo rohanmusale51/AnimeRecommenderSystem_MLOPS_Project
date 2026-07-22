@@ -9,8 +9,10 @@ config/__init__.py
 config/paths_config.py
 pipeline/__init__.py
 src/__init__.py
+src/base_model.py
 src/custom_exception.py
 src/data_ingestion.py
+src/data_processing.py
 src/logger.py
 utils/__init__.py
 utils/common_functions.py
