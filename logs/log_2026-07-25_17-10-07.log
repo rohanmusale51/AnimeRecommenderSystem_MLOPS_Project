@@ -1,0 +1,25 @@
+2026-07-25 17:10:16,801 - INFO - DataProcessing Intialized
+2026-07-25 17:10:18,264 - INFO - Data loaded sucesfully for Data Processing
+2026-07-25 17:10:18,545 - INFO - Filtered users sucesfully...
+2026-07-25 17:10:18,578 - INFO - Scaling done for Processing 
+2026-07-25 17:10:18,714 - INFO - Encoding done for Users and Anime
+2026-07-25 17:10:19,181 - INFO - Data splitted sucesfullyy
+2026-07-25 17:10:19,190 - INFO - user2user_encoded saved sucesfully in processed directory
+2026-07-25 17:10:19,199 - INFO - user2user_decoded saved sucesfully in processed directory
+2026-07-25 17:10:19,230 - INFO - anime2anime_encoded saved sucesfully in processed directory
+2026-07-25 17:10:19,272 - INFO - anime2anime_decoded saved sucesfully in processed directory
+2026-07-25 17:10:23,879 - INFO - ALl the training testing data as well as rating_df is saved now..
+2026-07-25 17:10:39,010 - INFO - DF AND SYNOPSIS_Df saved sucesfullyy...
+2026-07-25 17:10:39,018 - INFO - Data Processing Pipeline Run sucesfully .... Congrats
+2026-07-25 17:10:39,022 - INFO - Model Training & COMET ML initialized..
+2026-07-25 17:10:51,581 - INFO - Data loaded sucesfully for Model Trainig
+2026-07-25 17:10:51,625 - INFO - Succesfully read the YAML file
+2026-07-25 17:10:51,625 - INFO - Loaded configuration from config.yaml
+2026-07-25 17:10:52,770 - WARNING - TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+2026-07-25 17:10:52,778 - INFO - Model created sucesfully....
+2026-07-25 17:11:46,146 - INFO - Model training Completedd.....
+2026-07-25 17:11:46,147 - WARNING - You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+2026-07-25 17:11:46,197 - INFO - Model saved to artifacts/model\model.h5
+2026-07-25 17:11:46,200 - INFO - Extracting weights for user_embedding
+2026-07-25 17:11:46,216 - INFO - Extracting weights for anime_embedding
+2026-07-25 17:11:46,262 - INFO - User and Anime weights saved sucesfully....
