@@ -25,8 +25,8 @@ SYNOPSIS_DF = os.path.join(PROCESSED_DIR,"synopsis_df.csv")
 USER2USER_ENCODED = "artifacts/processed/user2user_encoded.pkl"
 USER2USER_DECODED = "artifacts/processed/user2user_decoded.pkl"
 
-ANIME2ANIME_ENCODED = "artifacts/processed/anim2anime_encoded.pkl"
-ANIME2ANIME_DECODED = "artifacts/processed/anim2anime_decoded.pkl"
+ANIME2ANIME_ENCODED = "artifacts/processed/anime2anime_encoded.pkl"
+ANIME2ANIME_DECODED = "artifacts/processed/anime2anime_decoded.pkl"
 
 
 ###################### MODEL TRAINING #######################333

@@ -1,0 +1,12 @@
+2026-07-24 19:28:32,028 - INFO - Model Training & COMET ML initialized..
+2026-07-24 19:28:42,911 - INFO - Data loaded sucesfully for Model Trainig
+2026-07-24 19:28:42,977 - INFO - Succesfully read the YAML file
+2026-07-24 19:28:42,980 - INFO - Loaded configuration from config.yaml
+2026-07-24 19:28:43,852 - WARNING - TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+2026-07-24 19:28:43,859 - INFO - Model created sucesfully....
+2026-07-24 19:30:33,100 - INFO - Model training Completedd.....
+2026-07-24 19:30:33,101 - WARNING - You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+2026-07-24 19:30:33,200 - INFO - Model saved to artifacts/model\model.h5
+2026-07-24 19:30:33,207 - INFO - Extracting weights for user_embedding
+2026-07-24 19:30:33,228 - INFO - Extracting weights for anime_embedding
+2026-07-24 19:30:33,300 - INFO - User and Anime weights saved sucesfully....

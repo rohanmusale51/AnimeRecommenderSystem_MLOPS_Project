@@ -13,13 +13,13 @@ logger = get_logger(__name__)
 class ModelTraining:
     def __init__(self,data_path):
         self.data_path= data_path
-
-        self.experiment = comet_ml.Experiment(
-            api_key="uqgrnGhGvBA0zC3HfdmGf2WN9",
-            project_name="mlops-course-2",
-            workspace="data-guru0"
-        )
         logger.info("Model Training & COMET ML initialized..")
+    
+        self.experiment = comet_ml.Experiment(
+            api_key="AmzESzCZExUE8MWLVOScfwsRd",
+            project_name="AnimeRecommenderSystem",
+            workspace="rohanmusale51"
+        )
     
     def load_data(self):
         try:
@@ -92,7 +92,7 @@ class ModelTraining:
 
                     self.experiment.log_metric('train_loss',train_loss,step=epoch)
                     self.experiment.log_metric('val_loss',val_loss,step=epoch)
-            
+                    
             except Exception as e:
                 raise CustomException("Model training failedd.....")
             
@@ -127,6 +127,7 @@ class ModelTraining:
             self.experiment.log_asset(MODEL_PATH)
             self.experiment.log_asset(ANIME_WEIGHTS_PATH)
             self.experiment.log_asset(USER_WEIGHTS_PATH)
+            
 
             logger.info("User and Anime weights saved sucesfully....")
         except Exception as e:
