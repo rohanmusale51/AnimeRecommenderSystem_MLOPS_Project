@@ -1,12 +1,12 @@
 pipeline {
     agent any
 
-    environment {
+    /*environment {
         VENV_DIR = 'venv'
         GCP_PROJECT = 'mlops-new-447207'
         GCLOUD_PATH = "/var/jenkins_home/google-cloud-sdk/bin"
         KUBECTL_AUTH_PLUGIN = "/usr/lib/google-cloud-sdk/bin"
-    }
+    }*/
 
     stages{
 
@@ -18,7 +18,7 @@ pipeline {
                 }
             }
         }
-
+        /*
         stage("Making a virtual environment...."){
             steps{
                 script{
@@ -84,6 +84,6 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
     }
 }
