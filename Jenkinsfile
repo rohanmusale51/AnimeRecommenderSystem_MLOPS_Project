@@ -1,12 +1,14 @@
 pipeline {
     agent any
 
-    /*environment {
+    environment {
         VENV_DIR = 'venv'
+        /*
         GCP_PROJECT = 'mlops-new-447207'
         GCLOUD_PATH = "/var/jenkins_home/google-cloud-sdk/bin"
         KUBECTL_AUTH_PLUGIN = "/usr/lib/google-cloud-sdk/bin"
-    }*/
+        */
+    }
 
     stages{
 
@@ -18,7 +20,7 @@ pipeline {
                 }
             }
         }
-        /*
+        
         stage("Making a virtual environment...."){
             steps{
                 script{
@@ -34,10 +36,10 @@ pipeline {
             }
         }
 
-
+        
         stage('DVC Pull'){
             steps{
-                withCredentials([file(credentialsId:'gcp-key' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
+                withCredentials([file(credentialsId:'animerecommendersystem' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
                     script{
                         echo 'DVC Pul....'
                         sh '''
@@ -49,7 +51,7 @@ pipeline {
             }
         }
 
-
+        /*
         stage('Build and Push Image to GCR'){
             steps{
                 withCredentials([file(credentialsId:'gcp-key' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
