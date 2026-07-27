@@ -1,0 +1,5 @@
+[core]
+    remote = myremote
+['remote "myremote"']
+    url = gs://anime_dvc_bucket97/
+    credentialpath = E:\Udemy\MLOPSProject\AnimeRecommenderSystemKey\animerecommendersystem-a8b5f636b600.json
