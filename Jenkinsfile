@@ -14,7 +14,7 @@ pipeline {
             steps{
                 script{
                     echo 'Cloning from Github...'
-                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github-token', url: 'https://github.com/data-guru0/MLOPS-COURSE-PROJECT-2.git']])
+                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'animerecommendersystem-token', url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git']])
                 }
             }
         }
