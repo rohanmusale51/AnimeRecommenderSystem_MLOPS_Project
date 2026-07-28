@@ -4,7 +4,7 @@ pipeline {
     environment {
         VENV_DIR = 'venv'
         GCP_PROJECT = 'animerecommendersystem'
-        GCLOUD_PATH = "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin"
+        GCLOUD_PATH = "/var/jenkins_home/google-cloud-sdk/bin"
         
     }
 
@@ -42,6 +42,8 @@ pipeline {
                         echo 'DVC Pul....'
                         sh '''
                         . ${VENV_DIR}/bin/activate
+                        gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+                        gcloud config set project ${GCP_PROJECT}
                         dvc pull
                         '''
                     }
