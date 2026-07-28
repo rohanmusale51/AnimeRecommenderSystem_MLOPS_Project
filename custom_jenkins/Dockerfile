@@ -17,6 +17,7 @@ RUN groupadd -f docker && \
     usermod -aG docker jenkins && \
     echo "jenkins ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+RUN mkdir -p /var/lib/docker
 VOLUME /var/lib/docker
 
 USER jenkins
