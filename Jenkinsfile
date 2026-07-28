@@ -35,7 +35,7 @@ pipeline {
         
         stage('DVC Pull'){
             steps{
-                withCredentials([file(credentialsId:'animerecommendersystem' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
+                withCredentials([file(credentialsId:'animerecommendersystem-key' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
                     script{
                         echo 'DVC Pul....'
                         sh '''
@@ -48,3 +48,4 @@ pipeline {
         }
     }
 }
+
