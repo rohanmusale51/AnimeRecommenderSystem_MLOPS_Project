@@ -4,8 +4,8 @@ pipeline {
     environment {
         VENV_DIR = 'venv'
         GCP_PROJECT = 'animerecommendersystem'
-        GCLOUD_PATH = "C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin"
-        KUBECTL_AUTH_PLUGIN = "C:\Program Files\Docker\Docker\resources\bin\"
+        GCLOUD_PATH = "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        KUBECTL_AUTH_PLUGIN = "C:\\Program Files\\Docker\\Docker\\resources\\bin\\"
     }
 
     stages{
