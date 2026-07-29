@@ -42,6 +42,18 @@ pipeline {
             }
         }
 
+        stage("Diagnostics") {
+            steps {
+                script {
+                    echo 'Checking connectivity...'
+                    sh '''
+                    nslookup storage.googleapis.com || true
+                    curl -I https://storage.googleapis.com || true
+                    '''
+                }
+            }
+        }
+
 
         stage('DVC Pull'){
             steps{
