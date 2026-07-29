@@ -11,8 +11,8 @@ pipeline {
         DVC_RETRY_MAX = "10"
         DVC_RETRY_DELAY = "5"
         // Proxy configuration (optional, safe defaults)
-        HTTP_PROXY = "http://proxy.company.com:8080"
-        HTTPS_PROXY = "http://proxy.company.com:8080"
+        HTTP_PROXY = ""
+        HTTPS_PROXY = ""
         NO_PROXY = "localhost,127.0.0.1"
     }
 
