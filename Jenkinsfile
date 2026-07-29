@@ -6,11 +6,11 @@ pipeline {
         GCP_PROJECT = 'animerecommendersystem'
         GCLOUD_PATH ="/var/jenkins_home/google-cloud-sdk/bin"
         KUBECTL_AUTH_PLUGIN ="/usr/lib/google-cloud-sdk/bin"
-        # Force DVC to resolve storage.googleapis.com to IPv4
+        //Force DVC to resolve storage.googleapis.com to IPv4
         DVC_HTTP_RESOLVE = "storage.googleapis.com:443:142.251.222.187"
         DVC_RETRY_MAX = "10"
         DVC_RETRY_DELAY = "5"
-        # Proxy configuration (optional, safe defaults)
+        // Proxy configuration (optional, safe defaults)
         HTTP_PROXY = "http://proxy.company.com:8080"
         HTTPS_PROXY = "http://proxy.company.com:8080"
         NO_PROXY = "localhost,127.0.0.1"
