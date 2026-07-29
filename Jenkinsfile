@@ -6,6 +6,14 @@ pipeline {
         GCP_PROJECT = 'animerecommendersystem'
         GCLOUD_PATH = "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
         KUBECTL_AUTH_PLUGIN = "C:\\Program Files\\Docker\\Docker\\resources\\bin\\"
+         # Force DVC to resolve storage.googleapis.com to IPv4
+        DVC_HTTP_RESOLVE = "storage.googleapis.com:443:142.251.222.187"
+        DVC_RETRY_MAX = "10"
+        DVC_RETRY_DELAY = "5"
+        # Proxy configuration (optional, safe defaults)
+        HTTP_PROXY = "http://proxy.company.com:8080"
+        HTTPS_PROXY = "http://proxy.company.com:8080"
+        NO_PROXY = "localhost,127.0.0.1"
     }
 
     stages{
@@ -28,7 +36,7 @@ pipeline {
                     . ${VENV_DIR}/bin/activate
                     pip install --upgrade pip
                     pip install -e .
-                    pip install  dvc
+                    pip install dvc aiohttp gcsfs --upgrade
                     '''
                 }
             }
@@ -39,12 +47,18 @@ pipeline {
             steps{
                 withCredentials([file(credentialsId:'animerecommendersystem-key' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
                     script{
-                        echo 'DVC Pul....'
+                        echo 'DVC Pull...'
                         sh '''
                         . ${VENV_DIR}/bin/activate
                         gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${GCP_PROJECT}
-                        dvc pull
+
+                        echo "Running DVC pull with IPv4 pinning..."
+                        dvc pull -v || {
+                          echo "Retrying with fallback IP..."
+                          export DVC_HTTP_RESOLVE="storage.googleapis.com:443:142.250.205.123"
+                          dvc pull -v
+                        }
                         '''
                     }
                 }
