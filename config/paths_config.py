@@ -1,6 +1,6 @@
 import os
 
-###################### DATA INGESTION ############################3
+###################### DATA INGESTION ############################
 
 RAW_DIR = "artifacts/raw"
 CONFIG_PATH = "config/config.yaml"

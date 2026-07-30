@@ -14,9 +14,9 @@ pipeline {
         HTTP_PROXY = ""
         HTTPS_PROXY = ""
         NO_PROXY = "localhost,127.0.0.1"
-        REGION = "us-central1"
-        REPO_NAME = "mlops-repo"   // <-- create this repo in Artifact Registry
-        IMAGE_NAME = "mlops-project"
+        REGION = "us"
+        REPO_NAME = "animerecommendersystem-repo"   // <-- create this repo in Artifact Registry
+        IMAGE_NAME = "animerecommendersystem"
     }
 
     stages{
@@ -115,7 +115,7 @@ pipeline {
                         export PATH=$PATH:${GCLOUD_PATH}:${KUBECTL_AUTH_PLUGIN}
                         gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${GCP_PROJECT}
-                        gcloud container clusters get-credentials ml-app-cluster --region us-central1
+                        gcloud container clusters get-credentials ml-app-cluster --region us
                         kubectl apply -f deployment.yaml
                         '''
                     }
