@@ -14,6 +14,9 @@ pipeline {
         HTTP_PROXY = ""
         HTTPS_PROXY = ""
         NO_PROXY = "localhost,127.0.0.1"
+        REGION = "us-central1"
+        REPO_NAME = "mlops-repo"   // <-- create this repo in Artifact Registry
+        IMAGE_NAME = "mlops-project"
     }
 
     stages{
@@ -79,19 +82,23 @@ pipeline {
 	
 	
 
-        /*
-        stage('Build and Push Image to GCR'){
-            steps{
-                withCredentials([file(credentialsId:'animerecommendersystem-key' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
-                    script{
-                        echo 'Build and Push Image to GCR'
+        
+        stage('Building and Pushing Docker Image to Artifact Registry') {
+            steps {
+                withCredentials([file(credentialsId: 'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    script {
+                        echo 'Building and Pushing Docker Image to Artifact Registry.............'
                         sh '''
                         export PATH=$PATH:${GCLOUD_PATH}
+
                         gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
                         gcloud config set project ${GCP_PROJECT}
-                        gcloud auth configure-docker --quiet
-                        docker build -t gcr.io/${GCP_PROJECT}/ml-project:latest .
-                        docker push gcr.io/${GCP_PROJECT}/ml-project:latest
+
+                        # Configure Docker for Artifact Registry
+                        gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+
+                        docker build -t ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest .
+                        docker push ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest
                         '''
                     }
                 }
@@ -114,6 +121,6 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
     }
 }
