@@ -4,9 +4,9 @@ pipeline {
     environment {
         VENV_DIR = 'venv'
         GCP_PROJECT = 'animerecommendersystem'
-        GCLOUD_PATH ="/var/jenkins_home/google-cloud-sdk/bin"
-        KUBECTL_AUTH_PLUGIN ="/usr/lib/google-cloud-sdk/bin"
-        //Force DVC to resolve storage.googleapis.com to IPv4
+        GCLOUD_PATH = "/var/jenkins_home/google-cloud-sdk/bin"
+        KUBECTL_AUTH_PLUGIN = "/usr/lib/google-cloud-sdk/bin"
+        // Force DVC to resolve storage.googleapis.com to IPv4
         DVC_HTTP_RESOLVE = "storage.googleapis.com:443:142.251.222.187"
         DVC_RETRY_MAX = "10"
         DVC_RETRY_DELAY = "5"
@@ -15,25 +15,48 @@ pipeline {
         HTTPS_PROXY = ""
         NO_PROXY = "localhost,127.0.0.1"
         REGION = "us"
-        REPO_NAME = "animerecommendersystem-repo"   // <-- create this repo in Artifact Registry
+        REPO_NAME = "animerecommendersystem-repo"
         IMAGE_NAME = "animerecommendersystem"
     }
 
-    stages{
+    options {
+        // Prevent concurrent builds from clashing in the same workspace
+        disableConcurrentBuilds()
+    }
 
-        stage("Cloning from Github...."){
-            steps{
-                script{
-                    echo 'Cloning from Github...'
-                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'animerecommendersystem-token', url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git']])
+    stages {
+        stage('Cleanup') {
+            steps {
+                script {
+                    echo 'Cleaning workspace and removing stale Git locks...'
+                    sh '''
+                    rm -f /var/jenkins_home/workspace/AnimeRecommenderSystem_MLOPS/.git/HEAD.lock || true
+                    '''
+                    cleanWs()
                 }
             }
         }
 
-        stage("Making a virtual environment...."){
-            steps{
-                script{
-                    echo 'Making a virtual environment...'
+        stage("Cloning from Github") {
+            steps {
+                script {
+                    echo 'Cloning from Github...'
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: '*/main']],
+                        extensions: [[$class: 'CleanBeforeCheckout']],
+                        userRemoteConfigs: [[
+                            credentialsId: 'animerecommendersystem-token',
+                            url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git'
+                        ]]
+                    ])
+                }
+            }
+        }
+
+        stage("Making a virtual environment") {
+            steps {
+                script {
+                    echo 'Setting up Python virtual environment...'
                     sh '''
                     python -m venv ${VENV_DIR}
                     . ${VENV_DIR}/bin/activate
@@ -57,12 +80,11 @@ pipeline {
             }
         }
 
-
-        stage('DVC Pull'){
-            steps{
-                withCredentials([file(credentialsId:'animerecommendersystem-key' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
-                    script{
-                        echo 'DVC Pull...'
+        stage('DVC Pull') {
+            steps {
+                withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    script {
+                        echo 'Running DVC Pull...'
                         sh '''
                         . ${VENV_DIR}/bin/activate
                         gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -79,15 +101,12 @@ pipeline {
                 }
             }
         }
-	
-	
 
-        
         stage('Building and Pushing Docker Image to Artifact Registry') {
             steps {
                 withCredentials([file(credentialsId: 'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     script {
-                        echo 'Building and Pushing Docker Image to Artifact Registry.............'
+                        echo 'Building and Pushing Docker Image...'
                         sh '''
                         export PATH=$PATH:${GCLOUD_PATH}
 
@@ -105,12 +124,11 @@ pipeline {
             }
         }
 
-
-        stage('Deploying to Kubernetes'){
-            steps{
-                withCredentials([file(credentialsId:'animerecommendersystem-key' , variable: 'GOOGLE_APPLICATION_CREDENTIALS' )]){
-                    script{
-                        echo 'Deploying to Kubernetes'
+        stage('Deploying to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    script {
+                        echo 'Deploying to Kubernetes...'
                         sh '''
                         export PATH=$PATH:${GCLOUD_PATH}:${KUBECTL_AUTH_PLUGIN}
                         gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
@@ -121,6 +139,19 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline finished. Cleaning workspace..."
+            cleanWs()
+        }
+        success {
+            echo "✅ Build and deployment succeeded!"
+        }
+        failure {
+            echo "❌ Build failed. Please check logs."
         }
     }
 }
