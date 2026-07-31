@@ -20,8 +20,7 @@ pipeline {
     }
 
     options {
-        // Prevent concurrent builds from clashing in the same workspace
-        disableConcurrentBuilds()
+        disableConcurrentBuilds()   // prevent workspace clashes
     }
 
     stages {
@@ -29,15 +28,13 @@ pipeline {
             steps {
                 script {
                     echo 'Cleaning workspace and removing stale Git locks...'
-                    sh '''
-                    rm -f /var/jenkins_home/workspace/AnimeRecommenderSystem_MLOPS/.git/HEAD.lock || true
-                    '''
+                    sh 'rm -f /var/jenkins_home/workspace/AnimeRecommenderSystem_MLOPS/.git/HEAD.lock || true'
                     cleanWs()
                 }
             }
         }
 
-        stage("Cloning from Github") {
+        stage('Checkout') {
             steps {
                 script {
                     echo 'Cloning from Github...'
@@ -53,10 +50,10 @@ pipeline {
             }
         }
 
-        stage("Making a virtual environment") {
+        stage('Setup Virtual Environment') {
             steps {
                 script {
-                    echo 'Setting up Python virtual environment...'
+                    echo 'Creating Python virtual environment...'
                     sh '''
                     python -m venv ${VENV_DIR}
                     . ${VENV_DIR}/bin/activate
@@ -68,7 +65,7 @@ pipeline {
             }
         }
 
-        stage("Diagnostics") {
+        stage('Diagnostics') {
             steps {
                 script {
                     echo 'Checking connectivity...'
@@ -102,11 +99,11 @@ pipeline {
             }
         }
 
-        stage('Building and Pushing Docker Image to Artifact Registry') {
+        stage('Build & Push Docker Image') {
             steps {
                 withCredentials([file(credentialsId: 'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     script {
-                        echo 'Building and Pushing Docker Image...'
+                        echo 'Building and Pushing Docker Image with BuildKit...'
                         sh '''
                         export PATH=$PATH:${GCLOUD_PATH}
 
@@ -116,15 +113,22 @@ pipeline {
                         # Configure Docker for Artifact Registry
                         gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
 
-                        docker build -t ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest .
-                        docker push ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest
+                        # Enable BuildKit
+                        export DOCKER_BUILDKIT=1
+                        docker buildx create --use --name mybuilder || true
+                        docker buildx inspect mybuilder --bootstrap
+
+                        docker buildx build \
+                          --platform linux/amd64 \
+                          -t ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest \
+                          --push .
                         '''
                     }
                 }
             }
         }
 
-        stage('Deploying to Kubernetes') {
+        stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     script {
