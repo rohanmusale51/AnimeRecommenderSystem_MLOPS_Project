@@ -113,15 +113,8 @@ pipeline {
                         # Configure Docker for Artifact Registry
                         gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
 
-                        # Enable BuildKit
-                        export DOCKER_BUILDKIT=1
-                        docker buildx create --use --name mybuilder || true
-                        docker buildx inspect mybuilder --bootstrap
-
-                        docker buildx build \
-                          --platform linux/amd64 \
-                          -t ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest \
-                          --push .
+                        docker build -t ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest .
+                        docker push ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest
                         '''
                     }
                 }
