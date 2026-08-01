@@ -19,20 +19,8 @@ pipeline {
         IMAGE_NAME = "animerecommendersystem"
     }
 
-    options {
-        disableConcurrentBuilds()   // prevent workspace clashes
-    }
+    stages{
 
-    stages {
-        stage('Cleanup') {
-            steps {
-                script {
-                    echo 'Cleaning workspace and removing stale Git locks...'
-                    sh 'rm -f /var/jenkins_home/workspace/AnimeRecommenderSystem_MLOPS/.git/HEAD.lock || true'
-                    cleanWs()
-                }
-            }
-        }
 
         stage('Checkout') {
             steps {
