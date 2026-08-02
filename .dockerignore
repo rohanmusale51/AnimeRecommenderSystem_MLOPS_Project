@@ -1,0 +1,37 @@
+# Ignore Python cache and logs
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# Ignore virtual environments
+venv/
+.env/
+
+# Ignore datasets and artifacts
+artifacts/
+data/
+logs/
+notebook/
+raw/
+processed/
+
+# Ignore DVC and Git metadata
+.dvc/
+.dvcignore
+.git/
+.gitignore
+
+# Ignore IDE/editor files
+.vscode/
+*.swp
+
+# Ignore local configs and credentials
+*.json
+*.yaml
+*.yml
+*.ini
+
+# Ignore temporary files
+*.tmp
+*.bak
