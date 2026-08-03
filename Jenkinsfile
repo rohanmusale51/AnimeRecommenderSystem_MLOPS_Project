@@ -41,7 +41,7 @@ pipeline {
 
         stage('Checkout') {
             when {
-                not { expression { fileExists('artifacts/checkout.done') } }
+                not { expression { fileExists('artifacts\\checkout.done') } }
             }
             steps {
                 script {
@@ -66,7 +66,7 @@ pipeline {
 
         stage('Setup Virtual Environment') {
             when {
-                not { expression { fileExists('artifacts/setup_virtual.done') } }
+                not { expression { fileExists('artifacts\\setup_virtual.done') } }
             }
             steps {
                 bat '''
@@ -83,7 +83,7 @@ pipeline {
 
         stage('Diagnostics') {
             when {
-                not { expression { fileExists('artifacts/diagnostics.done') } }
+                not { expression { fileExists('artifacts\\diagnostics.done') } }
             }
             steps {
                 bat '''
