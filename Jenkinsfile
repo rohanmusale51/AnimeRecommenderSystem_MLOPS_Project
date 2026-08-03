@@ -21,6 +21,30 @@ pipeline {
 
     stages{
 
+        stage('Cleanup Flags if Repo Changed') {
+            steps {
+                script {
+                    echo 'Checking for repo changes...'
+                    sh '''
+                    mkdir -p artifacts
+                    if [ ! -f artifacts/last_commit.txt ]; then
+                        echo "No commit record found, forcing full run..."
+                        rm -f artifacts/*.done || true
+                    else
+                        LAST_COMMIT=$(cat artifacts/last_commit.txt)
+                        CURRENT_COMMIT=$(git rev-parse HEAD || echo "none")
+                        if [ "$LAST_COMMIT" != "$CURRENT_COMMIT" ]; then
+                            echo "Repo changed from $LAST_COMMIT to $CURRENT_COMMIT, resetting flags..."
+                            rm -f artifacts/*.done || true
+                        else
+                            echo "No repo changes, keeping flags."
+                        fi
+                    fi
+                    '''
+                }
+            }
+        }
+
 
         stage('Checkout') {
             when {
