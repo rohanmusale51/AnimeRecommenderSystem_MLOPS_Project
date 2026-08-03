@@ -23,46 +23,22 @@ pipeline {
     }
 
     stages {
-        stage('Cleanup Flags if Repo Changed') {
-            steps {
-                bat '''
-                if not exist artifacts mkdir artifacts
-                if not exist artifacts\\last_commit.txt (
-                    echo No commit record found, forcing full run...
-                    del /Q artifacts\\*.done 2>nul
-                ) else (
-                    for /f %%i in (artifacts\\last_commit.txt) do set LAST_COMMIT=%%i
-                    for /f %%j in ('git rev-parse HEAD') do set CURRENT_COMMIT=%%j
-                    if not "%LAST_COMMIT%"=="%CURRENT_COMMIT%" (
-                        echo Repo changed, resetting flags...
-                        del /Q artifacts\\*.done 2>nul
-                    ) else (
-                        echo No repo changes, keeping flags.
-                    )
-                )
-                '''
-            }
-        }
-
         stage('Checkout') {
             when { not { expression { fileExists('artifacts\\checkout.done') } } }
             steps {
-                script {
-                    echo 'Cloning from Github...'
-                    checkout([$class: 'GitSCM',
-                        branches: [[name: '*/main']],
-                        userRemoteConfigs: [[
-                            credentialsId: 'animerecommendersystem-token',
-                            url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git'
-                        ]]
-                    ])
-                    bat '''
-                    if not exist artifacts mkdir artifacts
-                    echo. > artifacts\\checkout.done
-                    git rev-parse HEAD > artifacts\\last_commit.txt
-                    dir artifacts
-                    '''
-                }
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        credentialsId: 'animerecommendersystem-token',
+                        url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git'
+                    ]]
+                ])
+                bat '''
+                if not exist artifacts mkdir artifacts
+                echo. > artifacts\\checkout.done
+                git rev-parse HEAD > artifacts\\last_commit.txt
+                dir artifacts
+                '''
             }
         }
 
@@ -158,7 +134,7 @@ pipeline {
 
     post {
         failure {
-            echo "Pipeline failed. Next run will skip already completed stages or reset if repo changed."
+            echo "Pipeline failed. Next run will skip already completed stages."
         }
     }
 }
