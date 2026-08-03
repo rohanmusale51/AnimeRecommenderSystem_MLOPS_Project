@@ -4,15 +4,15 @@ pipeline {
     environment {
         VENV_DIR = 'venv'
         GCP_PROJECT = 'animerecommendersystem'
-        GCLOUD_PATH = "C:\\jenkins\\google-cloud-sdk\\bin"
-        KUBECTL_AUTH_PLUGIN = "C:\\jenkins\\google-cloud-sdk\\bin"
+        GCLOUD_PATH = "/usr/local/google-cloud-sdk/bin"
+        KUBECTL_AUTH_PLUGIN = "/usr/local/google-cloud-sdk/bin"
 
-        // DVC networking and retry settings
+        # DVC networking and retry settings
         DVC_HTTP_RESOLVE = "storage.googleapis.com:443:142.251.222.187"
         DVC_RETRY_MAX = "10"
         DVC_RETRY_DELAY = "5"
 
-        // Proxy configuration
+        # Proxy configuration
         HTTP_PROXY = ""
         HTTPS_PROXY = ""
         NO_PROXY = "localhost,127.0.0.1"
@@ -24,7 +24,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            when { not { expression { fileExists('artifacts\\checkout.done') } } }
+            when { not { expression { fileExists('artifacts/checkout.done') } } }
             steps {
                 checkout([$class: 'GitSCM',
                     branches: [[name: '*/main']],
@@ -33,99 +33,99 @@ pipeline {
                         url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git'
                     ]]
                 ])
-                bat '''
-                if not exist artifacts mkdir artifacts
-                echo. > artifacts\\checkout.done
-                git rev-parse HEAD > artifacts\\last_commit.txt
-                dir artifacts
+                sh '''
+                mkdir -p artifacts
+                echo "checkout done" > artifacts/checkout.done
+                git rev-parse HEAD > artifacts/last_commit.txt
+                ls -l artifacts
                 '''
             }
         }
 
         stage('Setup Virtual Environment') {
-            when { not { expression { fileExists('artifacts\\setup_virtual.done') } } }
+            when { not { expression { fileExists('artifacts/setup_virtual.done') } } }
             steps {
-                bat '''
-                python -m venv %VENV_DIR%
-                call %VENV_DIR%\\Scripts\\activate.bat
+                sh '''
+                python3 -m venv ${VENV_DIR}
+                . ${VENV_DIR}/bin/activate
                 pip install --upgrade pip
                 pip install -e .
                 pip install dvc aiohttp gcsfs --upgrade
-                if not exist artifacts mkdir artifacts
-                echo. > artifacts\\setup_virtual.done
+                mkdir -p artifacts
+                echo "setup virtual done" > artifacts/setup_virtual.done
                 '''
             }
         }
 
         stage('Diagnostics') {
-            when { not { expression { fileExists('artifacts\\diagnostics.done') } } }
+            when { not { expression { fileExists('artifacts/diagnostics.done') } } }
             steps {
-                bat '''
-                nslookup storage.googleapis.com
-                curl -I https://storage.googleapis.com
-                if not exist artifacts mkdir artifacts
-                echo. > artifacts\\diagnostics.done
+                sh '''
+                nslookup storage.googleapis.com || true
+                curl -I https://storage.googleapis.com || true
+                mkdir -p artifacts
+                echo "diagnostics done" > artifacts/diagnostics.done
                 '''
             }
         }
 
         stage('DVC Pull') {
-            when { not { expression { fileExists('artifacts\\dvc_pull.done') } } }
+            when { not { expression { fileExists('artifacts/dvc_pull.done') } } }
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    bat '''
-                    call %VENV_DIR%\\Scripts\\activate.bat
-                    gcloud auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%
-                    gcloud config set project %GCP_PROJECT%
+                    sh '''
+                    . ${VENV_DIR}/bin/activate
+                    gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+                    gcloud config set project ${GCP_PROJECT}
 
-                    dvc pull -v || (
-                        echo Retrying with fallback IP...
-                        set DVC_HTTP_RESOLVE=storage.googleapis.com:443:142.250.205.123
+                    dvc pull -v || {
+                        echo "Retrying with fallback IP..."
+                        export DVC_HTTP_RESOLVE="storage.googleapis.com:443:142.250.205.123"
                         dvc pull -v
-                    )
+                    }
 
-                    if not exist artifacts mkdir artifacts
-                    echo. > artifacts\\dvc_pull.done
+                    mkdir -p artifacts
+                    echo "dvc pull done" > artifacts/dvc_pull.done
                     '''
                 }
             }
         }
 
         stage('Build & Push Docker Image') {
-            when { not { expression { fileExists('artifacts\\docker_build.done') } } }
+            when { not { expression { fileExists('artifacts/docker_build.done') } } }
             steps {
                 withCredentials([file(credentialsId: 'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    bat '''
-                    set PATH=%PATH%;%GCLOUD_PATH%
+                    sh '''
+                    export PATH=$PATH:${GCLOUD_PATH}
 
-                    gcloud auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%
-                    gcloud config set project %GCP_PROJECT%
+                    gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+                    gcloud config set project ${GCP_PROJECT}
 
-                    gcloud auth configure-docker %REGION%-docker.pkg.dev --quiet
+                    gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
 
-                    docker build -t %REGION%-docker.pkg.dev/%GCP_PROJECT%/%REPO_NAME%/%IMAGE_NAME%:latest .
-                    docker push %REGION%-docker.pkg.dev/%GCP_PROJECT%/%REPO_NAME%/%IMAGE_NAME%:latest
+                    docker build -t ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest .
+                    docker push ${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:latest
 
-                    if not exist artifacts mkdir artifacts
-                    echo. > artifacts\\docker_build.done
+                    mkdir -p artifacts
+                    echo "docker build done" > artifacts/docker_build.done
                     '''
                 }
             }
         }
 
         stage('Deploy to Kubernetes') {
-            when { not { expression { fileExists('artifacts\\deploy.done') } } }
+            when { not { expression { fileExists('artifacts/deploy.done') } } }
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    bat '''
-                    set PATH=%PATH%;%GCLOUD_PATH%;%KUBECTL_AUTH_PLUGIN%
-                    gcloud auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%
-                    gcloud config set project %GCP_PROJECT%
+                    sh '''
+                    export PATH=$PATH:${GCLOUD_PATH}:${KUBECTL_AUTH_PLUGIN}
+                    gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+                    gcloud config set project ${GCP_PROJECT}
                     gcloud container clusters get-credentials ml-app-cluster --region us-central1
                     kubectl apply -f deployment.yaml
 
-                    if not exist artifacts mkdir artifacts
-                    echo. > artifacts\\deploy.done
+                    mkdir -p artifacts
+                    echo "deploy done" > artifacts/deploy.done
                     '''
                 }
             }
