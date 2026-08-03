@@ -7,12 +7,12 @@ pipeline {
         GCLOUD_PATH = "/usr/local/google-cloud-sdk/bin"
         KUBECTL_AUTH_PLUGIN = "/usr/local/google-cloud-sdk/bin"
 
-        # DVC networking and retry settings
+        // DVC networking and retry settings
         DVC_HTTP_RESOLVE = "storage.googleapis.com:443:142.251.222.187"
         DVC_RETRY_MAX = "10"
         DVC_RETRY_DELAY = "5"
 
-        # Proxy configuration
+        // Proxy configuration
         HTTP_PROXY = ""
         HTTPS_PROXY = ""
         NO_PROXY = "localhost,127.0.0.1"
