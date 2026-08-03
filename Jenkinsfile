@@ -45,6 +45,7 @@ pipeline {
                     git rev-parse HEAD > artifacts/last_commit.txt
                     ls -l artifacts
                     '''
+                }
             }
         }
 
