@@ -9,12 +9,12 @@ venv/
 .env/
 
 # Ignore datasets and artifacts
-artifacts/
+
 data/
 logs/
 notebook/
 raw/
-processed/
+
 
 # Ignore DVC and Git metadata
 .dvc/
