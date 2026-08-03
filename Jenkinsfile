@@ -6,12 +6,17 @@ pipeline {
         GCP_PROJECT = 'animerecommendersystem'
         GCLOUD_PATH = "C:\\jenkins\\google-cloud-sdk\\bin"
         KUBECTL_AUTH_PLUGIN = "C:\\jenkins\\google-cloud-sdk\\bin"
+
+        // DVC networking and retry settings
         DVC_HTTP_RESOLVE = "storage.googleapis.com:443:142.251.222.187"
         DVC_RETRY_MAX = "10"
         DVC_RETRY_DELAY = "5"
+
+        // Proxy configuration
         HTTP_PROXY = ""
         HTTPS_PROXY = ""
         NO_PROXY = "localhost,127.0.0.1"
+
         REGION = "us"
         REPO_NAME = "animerecommendersystem-repo"
         IMAGE_NAME = "animerecommendersystem"
@@ -40,15 +45,12 @@ pipeline {
         }
 
         stage('Checkout') {
-            when {
-                not { expression { fileExists('artifacts\\checkout.done') } }
-            }
+            when { not { expression { fileExists('artifacts\\checkout.done') } } }
             steps {
                 script {
                     echo 'Cloning from Github...'
                     checkout([$class: 'GitSCM',
                         branches: [[name: '*/main']],
-                        extensions: [],
                         userRemoteConfigs: [[
                             credentialsId: 'animerecommendersystem-token',
                             url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git'
@@ -56,7 +58,7 @@ pipeline {
                     ])
                     bat '''
                     if not exist artifacts mkdir artifacts
-                    echo checkout done > artifacts\\checkout.done
+                    echo. > artifacts\\checkout.done
                     git rev-parse HEAD > artifacts\\last_commit.txt
                     dir artifacts
                     '''
@@ -65,9 +67,7 @@ pipeline {
         }
 
         stage('Setup Virtual Environment') {
-            when {
-                not { expression { fileExists('artifacts\\setup_virtual.done') } }
-            }
+            when { not { expression { fileExists('artifacts\\setup_virtual.done') } } }
             steps {
                 bat '''
                 python -m venv %VENV_DIR%
@@ -76,29 +76,25 @@ pipeline {
                 pip install -e .
                 pip install dvc aiohttp gcsfs --upgrade
                 if not exist artifacts mkdir artifacts
-                echo setup virtual done > artifacts\\setup_virtual.done
+                echo. > artifacts\\setup_virtual.done
                 '''
             }
         }
 
         stage('Diagnostics') {
-            when {
-                not { expression { fileExists('artifacts\\diagnostics.done') } }
-            }
+            when { not { expression { fileExists('artifacts\\diagnostics.done') } } }
             steps {
                 bat '''
                 nslookup storage.googleapis.com
                 curl -I https://storage.googleapis.com
                 if not exist artifacts mkdir artifacts
-                echo diagnostics done > artifacts\\diagnostics.done
+                echo. > artifacts\\diagnostics.done
                 '''
             }
         }
 
         stage('DVC Pull') {
-            when {
-                not { expression { fileExists('artifacts\\dvc_pull.done') } }
-            }
+            when { not { expression { fileExists('artifacts\\dvc_pull.done') } } }
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     bat '''
@@ -106,7 +102,6 @@ pipeline {
                     gcloud auth activate-service-account --key-file=%GOOGLE_APPLICATION_CREDENTIALS%
                     gcloud config set project %GCP_PROJECT%
 
-                    echo Running DVC pull with IPv4 pinning...
                     dvc pull -v || (
                         echo Retrying with fallback IP...
                         set DVC_HTTP_RESOLVE=storage.googleapis.com:443:142.250.205.123
@@ -114,16 +109,14 @@ pipeline {
                     )
 
                     if not exist artifacts mkdir artifacts
-                    echo dvc pull done > artifacts\\dvc_pull.done
+                    echo. > artifacts\\dvc_pull.done
                     '''
                 }
             }
         }
 
         stage('Build & Push Docker Image') {
-            when {
-                not { expression { fileExists('artifacts\\docker_build.done') } }
-            }
+            when { not { expression { fileExists('artifacts\\docker_build.done') } } }
             steps {
                 withCredentials([file(credentialsId: 'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     bat '''
@@ -138,16 +131,14 @@ pipeline {
                     docker push %REGION%-docker.pkg.dev/%GCP_PROJECT%/%REPO_NAME%/%IMAGE_NAME%:latest
 
                     if not exist artifacts mkdir artifacts
-                    echo docker build done > artifacts\\docker_build.done
+                    echo. > artifacts\\docker_build.done
                     '''
                 }
             }
         }
 
         stage('Deploy to Kubernetes') {
-            when {
-                not { expression { fileExists('artifacts\\deploy.done') } }
-            }
+            when { not { expression { fileExists('artifacts\\deploy.done') } } }
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     bat '''
@@ -158,7 +149,7 @@ pipeline {
                     kubectl apply -f deployment.yaml
 
                     if not exist artifacts mkdir artifacts
-                    echo deploy done > artifacts\\deploy.done
+                    echo. > artifacts\\deploy.done
                     '''
                 }
             }
