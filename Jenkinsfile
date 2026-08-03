@@ -23,6 +23,11 @@ pipeline {
 
 
         stage('Checkout') {
+            when {
+                not {
+                    expression { fileExists('artifacts/checkout.done') }
+                }
+            }
             steps {
                 script {
                     echo 'Cloning from Github...'
@@ -34,11 +39,17 @@ pipeline {
                             url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git'
                         ]]
                     ])
+                    sh 'mkdir -p artifacts && touch artifacts/checkout.done'
                 }
             }
         }
 
         stage('Setup Virtual Environment') {
+            when {
+                not {
+                    expression { fileExists('artifacts/venv.done') }
+                }
+            }
             steps {
                 script {
                     echo 'Creating Python virtual environment...'
@@ -48,6 +59,7 @@ pipeline {
                     pip install --upgrade pip
                     pip install -e .
                     pip install dvc aiohttp gcsfs --upgrade
+                    mkdir -p artifacts && touch artifacts/setup_virtual.done
                     '''
                 }
             }
@@ -69,6 +81,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     script {
+                        checkpoint 'After DVC Pull'
                         echo 'Running DVC Pull...'
                         sh '''
                         . ${VENV_DIR}/bin/activate
@@ -81,6 +94,7 @@ pipeline {
                           export DVC_HTTP_RESOLVE="storage.googleapis.com:443:142.250.205.123"
                           dvc pull -v
                         }
+                        mkdir -p artifacts && touch artifacts/dvc_pull.done
                         '''
                     }
                 }
@@ -91,6 +105,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     script {
+                        checkpoint 'After Docker Build'
                         echo 'Building and Pushing Docker Image with BuildKit...'
                         sh '''
                         export PATH=$PATH:${GCLOUD_PATH}
@@ -113,6 +128,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     script {
+                        checkpoint 'After Deploy'
                         echo 'Deploying to Kubernetes...'
                         sh '''
                         export PATH=$PATH:${GCLOUD_PATH}:${KUBECTL_AUTH_PLUGIN}
