@@ -33,14 +33,18 @@ pipeline {
                     echo 'Cloning from Github...'
                     checkout([$class: 'GitSCM',
                         branches: [[name: '*/main']],
-                        extensions: [[$class: 'CleanBeforeCheckout']],
+                        extensions: [],
                         userRemoteConfigs: [[
                             credentialsId: 'animerecommendersystem-token',
                             url: 'https://github.com/rohanmusale51/AnimeRecommenderSystem_MLOPS_Project.git'
                         ]]
                     ])
-                    sh 'mkdir -p artifacts && touch artifacts/checkout.done'
-                }
+                    sh '''
+                    mkdir -p artifacts
+                    echo "checkout done" > artifacts/checkout.done
+                    git rev-parse HEAD > artifacts/last_commit.txt
+                    ls -l artifacts
+                    '''
             }
         }
 
