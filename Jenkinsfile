@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'FORCE_RUN', defaultValue: false, description: 'Force all stages to run')
+    }
+
     environment {
         VENV_DIR = 'venv'
         GCP_PROJECT = 'animerecommendersystem'
@@ -24,7 +28,12 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            when { not { expression { fileExists('artifacts/checkout.done') } } }
+            when {
+                anyOf {
+                    not { fileExists('artifacts/checkout.done') }
+                    expression { params.FORCE_RUN }
+                }
+            }
             steps {
                 checkout([$class: 'GitSCM',
                     branches: [[name: '*/main']],
@@ -43,7 +52,12 @@ pipeline {
         }
 
         stage('Setup Virtual Environment') {
-            when { not { expression { fileExists('artifacts/setup_virtual.done') } } }
+            when {
+                anyOf {
+                    not { fileExists('artifacts/setup_virtual.done') }
+                    expression { params.FORCE_RUN }
+                }
+            }
             steps {
                 sh '''
                 python3 -m venv ${VENV_DIR}
@@ -58,7 +72,12 @@ pipeline {
         }
 
         stage('Diagnostics') {
-            when { not { expression { fileExists('artifacts/diagnostics.done') } } }
+            when {
+                anyOf {
+                    not { fileExists('artifacts/diagnostics.done') }
+                    expression { params.FORCE_RUN }
+                }
+            }
             steps {
                 sh '''
                 nslookup storage.googleapis.com || true
@@ -70,7 +89,12 @@ pipeline {
         }
 
         stage('DVC Pull') {
-            when { not { expression { fileExists('artifacts/dvc_pull.done') } } }
+            when {
+                anyOf {
+                    not { fileExists('artifacts/dvc_pull.done') }
+                    expression { params.FORCE_RUN }
+                }
+            }
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh '''
@@ -92,7 +116,12 @@ pipeline {
         }
 
         stage('Build & Push Docker Image') {
-            when { not { expression { fileExists('artifacts/docker_build.done') } } }
+            when {
+                anyOf {
+                    not { fileExists('artifacts/docker_build.done') }
+                    expression { params.FORCE_RUN }
+                }
+            }
             steps {
                 withCredentials([file(credentialsId: 'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh '''
@@ -114,7 +143,12 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            when { not { expression { fileExists('artifacts/deploy.done') } } }
+            when {
+                anyOf {
+                    not { fileExists('artifacts/deploy.done') }
+                    expression { params.FORCE_RUN }
+                }
+            }
             steps {
                 withCredentials([file(credentialsId:'animerecommendersystem-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh '''
@@ -134,7 +168,7 @@ pipeline {
 
     post {
         failure {
-            echo "Pipeline failed. Next run will skip already completed stages."
+            echo "Pipeline failed. Next run will skip already completed stages unless FORCE_RUN is set."
         }
     }
 }
