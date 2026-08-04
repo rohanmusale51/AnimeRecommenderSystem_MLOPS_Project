@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
       - name: ml-app-container
-        image: gcr.io/animerecommendersystem/animerecommendersystem:latest
+        image: us-docker.pkg.dev/animerecommendersystem/animerecommendersystem-repo/animerecommendersystem:latest
         ports:
-        - containerPort: 5000  # Replace with the port your app listens on
+        - containerPort: 5000  # Flask app port
 ---
 apiVersion: v1
 kind: Service
