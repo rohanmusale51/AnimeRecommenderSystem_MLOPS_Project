@@ -30,7 +30,7 @@ pipeline {
         stage('Checkout') {
             when {
                 anyOf {
-                    not { fileExists('artifacts/checkout.done') }
+                    expression { !fileExists('artifacts/checkout.done') }
                     expression { params.FORCE_RUN }
                 }
             }
@@ -54,7 +54,7 @@ pipeline {
         stage('Setup Virtual Environment') {
             when {
                 anyOf {
-                    not { fileExists('artifacts/setup_virtual.done') }
+                    expression { !fileExists('artifacts/setup_virtual.done') }
                     expression { params.FORCE_RUN }
                 }
             }
@@ -74,7 +74,7 @@ pipeline {
         stage('Diagnostics') {
             when {
                 anyOf {
-                    not { fileExists('artifacts/diagnostics.done') }
+                    expression { !fileExists('artifacts/diagnostics.done') }
                     expression { params.FORCE_RUN }
                 }
             }
@@ -91,7 +91,7 @@ pipeline {
         stage('DVC Pull') {
             when {
                 anyOf {
-                    not { fileExists('artifacts/dvc_pull.done') }
+                    expression { !fileExists('artifacts/dvc_pull.done') }
                     expression { params.FORCE_RUN }
                 }
             }
@@ -118,7 +118,7 @@ pipeline {
         stage('Build & Push Docker Image') {
             when {
                 anyOf {
-                    not { fileExists('artifacts/docker_build.done') }
+                    expression { !fileExists('artifacts/docker_build.done') }
                     expression { params.FORCE_RUN }
                 }
             }
@@ -145,7 +145,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             when {
                 anyOf {
-                    not { fileExists('artifacts/deploy.done') }
+                    expression { !fileExists('artifacts/deploy.done') }
                     expression { params.FORCE_RUN }
                 }
             }
